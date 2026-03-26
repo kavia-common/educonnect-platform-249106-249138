@@ -159,3 +159,54 @@ Seeded records (id values are generated UUIDs):
   - One lecture event for MATH101
 
 These are intended to keep the UI/dashboard non-empty and to support upcoming backend endpoints.
+
+## Applied changes log (Step 01.01)
+
+All statements were executed one-at-a-time using the connection command in `db_connection.txt`:
+
+`psql postgresql://appuser:dbuser123@localhost:5000/myapp -c "<ONE SQL STATEMENT>"`
+
+### DDL applied
+
+- `CREATE EXTENSION IF NOT EXISTS pgcrypto;`
+- Tables created/ensured:
+  - `users`
+  - `students`
+  - `courses`
+  - `enrollments`
+  - `assignments`
+  - `submissions`
+  - `grades`
+  - `announcements`
+  - `notifications`
+  - `timetable_events`
+- Indexes created/ensured:
+  - `idx_students_user_id` on `students(user_id)`
+  - `idx_enrollments_student_id` on `enrollments(student_id)`
+  - `idx_enrollments_course_id` on `enrollments(course_id)`
+  - `idx_assignments_course_id` on `assignments(course_id)`
+  - `idx_submissions_student_id` on `submissions(student_id)`
+  - `idx_announcements_course_id` on `announcements(course_id)`
+  - `idx_notifications_user_created_at` on `notifications(user_id, created_at DESC)`
+
+### Seed data applied
+
+Seed statements were executed as individual `INSERT` statements (users/courses/enrollments use `ON CONFLICT` upserts where a suitable unique constraint exists):
+
+- Users upserted by `email`:
+  - `teacher1@educonnect.test` (Teacher One, `teacher`)
+  - `student1@educonnect.test` (Student One, `student`)
+- Student profile upserted by `user_id`:
+  - `S-0001`, grade level `10`
+- Courses upserted by `code`:
+  - `MATH101`, `ENG201`
+- Enrollments upserted by `(course_id, student_id)`:
+  - Student `S-0001` enrolled in both courses
+- Sample rows inserted:
+  - One assignment per course
+  - One announcement for `MATH101`
+  - One notification for `student1@educonnect.test`
+  - One timetable event for `MATH101`
+
+Notes:
+- If this database already had prior seed rows, non-upsert inserts (e.g., assignments/announcements/notifications/timetable_events) can add additional rows because there is no natural unique constraint on those entities.
